@@ -19,7 +19,7 @@ router.post('/create', async (req, res) => {
 // Get all visas
 router.get('/get-all-visa', async (req, res) => {
   try {
-    const visas = await Visa.find();
+    const visas = await Visa.find({delStatus:false});
     res.status(200).json(visas);
   } catch (err) {
     res.status(500).json({ message: 'Failed to retrieve visas', error: err.message });
@@ -27,7 +27,7 @@ router.get('/get-all-visa', async (req, res) => {
 });
 
 // Get a visa by ID
-router.get('/:id', async (req, res) => {
+router.get('/single-visa/:id', async (req, res) => {
   try {
     const visa = await Visa.findById(req.params.id);
     if (!visa) {
@@ -40,7 +40,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update a visa by ID
-router.put('/:id', async (req, res) => {
+router.put('/update-visa/:id', async (req, res) => {
   try {
     const { type, country, duration, delStatus } = req.body;
     const visa = await Visa.findByIdAndUpdate(
@@ -58,16 +58,22 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a visa by ID
-router.delete('/:id', async (req, res) => {
+router.put('/delete-visa/:id', async (req, res) => {
   try {
-    const visa = await Visa.findByIdAndDelete(req.params.id);
+    const visa = await Visa.findById(req.params.id);
     if (!visa) {
       return res.status(404).json({ message: 'Visa not found' });
     }
-    res.status(200).json({ message: 'Visa deleted successfully' });
+
+    // Set delStatus to true instead of deleting the visa
+    visa.delStatus = true;
+    await visa.save();
+
+    res.status(200).json({ message: 'Visa soft deleted successfully' });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to delete visa', error: err.message });
+    res.status(500).json({ message: 'Failed to soft delete visa', error: err.message });
   }
 });
+
 
 export default router;

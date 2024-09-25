@@ -10,6 +10,7 @@ import cors from 'cors';
 import { hasRole, isAuth } from './utils.js';
 import contactRouter from './routes/contactRouter.js';
 import blogRouter from './routes/blogRouter.js';
+import applyOnlineRouter from './routes/applyOnlineRouter.js';
 dotenv.config();
 
 const app = express();
@@ -22,7 +23,7 @@ mongoose.connect(process.env.MONGO_URI, {})
 
 // Basic route
 app.get('/', (req, res) => {
-  res.send('API is Working....');
+  res.send('API is Working....!!!!');
 });
 
 // Routes
@@ -33,6 +34,8 @@ app.use('/api/visa', isAuth, hasRole(['admin', 'superadmin']),visaRouter)
 app.use('/api/package', packageRouter)
 app.use('/api/contact', contactRouter)
 app.use('/api/blogs', blogRouter)
+app.use('/api/applyonline', applyOnlineRouter)
+
 
 // Define the port and start the server
 const PORT = process.env.PORT || 4040;

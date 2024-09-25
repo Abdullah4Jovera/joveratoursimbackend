@@ -19,7 +19,7 @@ router.post('/create', async (req, res) => {
 // Get all hotels
 router.get('/get-all-hotels', async (req, res) => {
   try {
-    const hotels = await Hotel.find();
+    const hotels = await Hotel.find({delStatus: false});
     res.status(200).json(hotels);
   } catch (err) {
     res.status(500).json({ message: 'Failed to retrieve hotels', error: err.message });
@@ -27,7 +27,7 @@ router.get('/get-all-hotels', async (req, res) => {
 });
 
 // Get a hotel by ID
-router.get('/:id', async (req, res) => {
+router.get('/single-hotel/:id', async (req, res) => {
   try {
     const hotel = await Hotel.findById(req.params.id);
     if (!hotel) {
@@ -40,12 +40,12 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update a hotel by ID
-router.put('/:id', async (req, res) => {
+router.put('/update-hotel/:id', async (req, res) => {
   try {
-    const { name, star, delStatus } = req.body;
+    const { name, stars, delStatus } = req.body;
     const hotel = await Hotel.findByIdAndUpdate(
       req.params.id,
-      { name, star, delStatus },
+      { name, stars, delStatus },
       { new: true, runValidators: true }
     );
     if (!hotel) {
@@ -58,16 +58,22 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a hotel by ID
-router.delete('/:id', async (req, res) => {
+router.put('/delete-hotel/:id', async (req, res) => {
   try {
-    const hotel = await Hotel.findByIdAndDelete(req.params.id);
+    const hotel = await Hotel.findById(req.params.id);
     if (!hotel) {
       return res.status(404).json({ message: 'Hotel not found' });
     }
-    res.status(200).json({ message: 'Hotel deleted successfully' });
+
+    // Update the delStatus field to true for soft deletion
+    hotel.delStatus = true;
+    await hotel.save();
+
+    res.status(200).json({ message: 'Hotel deleted successfully (soft delete)' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to delete hotel', error: err.message });
   }
 });
+
 
 export default router;

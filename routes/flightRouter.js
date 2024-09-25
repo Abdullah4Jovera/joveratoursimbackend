@@ -18,7 +18,7 @@ router.post('/create', async (req, res) => {
 // Get all flights
 router.get('/get-all-flights', async (req, res) => {
   try {
-    const flights = await Flight.find();
+    const flights = await Flight.find({delStatus: false});
     res.status(200).json(flights);
   } catch (err) {
     res.status(500).json({ message: 'Failed to retrieve flights', error: err.message });
@@ -57,16 +57,22 @@ router.put('/update-flight/:id', async (req, res) => {
 });
 
 // Delete a flight by ID
-router.delete('delete-flight/:id', async (req, res) => {
+router.put('/delete-flight/:id', async (req, res) => {
   try {
-    const flight = await Flight.findByIdAndDelete(req.params.id);
+    const flight = await Flight.findById(req.params.id);
     if (!flight) {
       return res.status(404).json({ message: 'Flight not found' });
     }
+
+    // Set delStatus to true for soft delete
+    flight.delStatus = true; // Assuming you have a `delStatus` field in your Flight model
+    await flight.save(); // Save the updated flight record
+
     res.status(200).json({ message: 'Flight deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to delete flight', error: err.message });
   }
 });
+
 
 export default router;
